@@ -73,8 +73,8 @@ const navData = {
       url: "",
       icon: LocateFixed,
       items: [
-        { title: "Create Training Need", url: "/create-training-need" },
-        { title: "Approve Training", url: "/approve-training" },
+       //{ title: "Create Training Need", url: "/create-training-need" },
+        //{ title: "Approve Training", url: "/approve-training" },
         
       ],
     },
@@ -83,8 +83,8 @@ const navData = {
       url: "",
       icon: Calendar,
       items: [
-        { title: "Calendar Management", url: "/calender-management" },
-        { title: "Calendar Analytics", url: "/calendar-analytics" },
+       // { title: "Calendar Management", url: "/calender-management" },
+       // { title: "Calendar Analytics", url: "/calendar-analytics" },
       ],
     },
     
@@ -93,11 +93,11 @@ const navData = {
       url: "",
       icon: UserSearch,
       items: [
-        { title: "Job Position Management", url: "/job-management" },
-        { title: "Job Requisition", url: "/create-vacancy" },
-        { title: "Requisition Pipeline", url: "/requisition-pipeline" },
-        { title: "Recruitment Dashboard", url: "/recruitment-dash" },
-        { title: "Recruitment Analytics", url: "/recruitment-analytics" },
+        //{ title: "Job Position Management", url: "/job-management" },
+        //{ title: "Job Requisition", url: "/create-vacancy" },
+        //{ title: "Requisition Pipeline", url: "/requisition-pipeline" },
+        //{ title: "Recruitment Dashboard", url: "/recruitment-dash" },
+        //{ title: "Recruitment Analytics", url: "/recruitment-analytics" },
       ],
     },
     
