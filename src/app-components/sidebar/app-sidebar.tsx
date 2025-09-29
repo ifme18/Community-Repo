@@ -38,6 +38,12 @@ const navData = {
       isActive: true,
     },
     {
+      title: "FundPage",
+      url:"/funds-page",
+      icon: Briefcase,
+      isActive: true,
+    },
+    {
       title: "Our Community Reports",
       url: "",
       icon: Briefcase,
