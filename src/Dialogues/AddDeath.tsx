@@ -13,17 +13,17 @@ import {
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 
-export type Student = {
+export type Death = {
   id?: string | number;
   name: string;
   username: string;
 };
 
-export function AddStudentDialog({
+export function AddDeathDialog({
   onAdd,
   triggerLabel = "Add Student",
 }: {
-  onAdd: (s: Student) => void;
+  onAdd: (s: Death) => void;
   triggerLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -33,7 +33,7 @@ export function AddStudentDialog({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || !username.trim()) return;
-    const newStudent: Student = { id: Date.now(), name: name.trim(), username: username.trim() };
+    const newStudent: Death = { id: Date.now(), name: name.trim(), username: username.trim() };
     onAdd(newStudent);
     setName("");
     setUsername("");
