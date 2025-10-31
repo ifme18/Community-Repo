@@ -1,17 +1,15 @@
-import React from 'react';
-
-
+import React, { useState } from 'react';
+import { AddDeathDialog, type DeathRecord} from '../../Dialogues/AddDeath';
 import { CalendarDays, Users, TrendingUp, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { Screen } from '../../app-components/layout/screen';
 
 function DeathReport() {
-  // Sample data for the death reports
-  const deathData = [
+  const initialData: DeathRecord[] = [
     {
       id: 1,
-      name: "",
+      name: "John Doe",
       age: 67,
       date: "2024-09-15",
       cause: "Heart Disease",
@@ -56,19 +54,24 @@ function DeathReport() {
     }
   ];
 
-  // Calculate statistics
-  const totalDeaths = deathData.length;
-  const averageAge = Math.round(deathData.reduce((sum, death) => sum + death.age, 0) / totalDeaths);
-  const thisMonth = deathData.filter(death => new Date(death.date).getMonth() === 8).length; // September
-  const lastMonth = 3; // Mock data for August
+  const [deathData, setDeathData] = useState<DeathRecord[]>(initialData);
 
-  // Group deaths by cause
+  function handleAddDeath(d: DeathRecord) {
+    setDeathData(prev => [d, ...prev]);
+  }
+
+  // Calculate statistics from state
+  const totalDeaths = deathData.length;
+  const averageAge = totalDeaths ? Math.round(deathData.reduce((sum, death) => sum + death.age, 0) / totalDeaths) : 0;
+  const thisMonth = deathData.filter(death => new Date(death.date).getMonth() === new Date().getMonth()).length;
+  const lastMonth = 3; // keep as mock if you don't have historical data
+
+  // Group deaths by cause & district (derived)
   const deathsByCause = deathData.reduce<Record<string, number>>((acc, death) => {
     acc[death.cause] = (acc[death.cause] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
-  // Group deaths by district
   const deathsByDistrict = deathData.reduce<Record<string, number>>((acc, death) => {
     acc[death.location] = (acc[death.location] || 0) + 1;
     return acc;
@@ -88,9 +91,14 @@ function DeathReport() {
   return (
     <Screen>
     <div className="p-6 space-y-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Community Death Report</h1>
-        <p className="text-gray-600">Monthly mortality statistics and detailed records</p>
+      <div className="mb-8 flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Community Death Report</h1>
+          <p className="text-gray-600">Monthly mortality statistics and detailed records</p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <AddDeathDialog onAdd={handleAddDeath} />
+        </div>
       </div>
 
       {/* Statistics Cards */}

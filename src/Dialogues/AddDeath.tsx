@@ -13,30 +13,50 @@ import {
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 
-export type Death = {
+export type DeathRecord = {
   id?: string | number;
   name: string;
-  username: string;
+  age: number;
+  date: string;
+  cause: string;
+  location: string;
+  reportedBy: string;
 };
 
 export function AddDeathDialog({
   onAdd,
-  triggerLabel = "Add Student",
+  triggerLabel = "Add Death",
 }: {
-  onAdd: (s: Death) => void;
+  onAdd: (d: DeathRecord) => void;
   triggerLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
-  const [username, setUsername] = useState("");
+  const [age, setAge] = useState<number | "">("");
+  const [date, setDate] = useState("");
+  const [cause, setCause] = useState("");
+  const [location, setLocation] = useState("");
+  const [reportedBy, setReportedBy] = useState("");
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim() || !username.trim()) return;
-    const newStudent: Death = { id: Date.now(), name: name.trim(), username: username.trim() };
-    onAdd(newStudent);
+    if (!name.trim() || !date || !cause.trim() || !location.trim() || !reportedBy.trim() || age === "") return;
+    const newRecord: DeathRecord = {
+      id: Date.now(),
+      name: name.trim(),
+      age: Number(age),
+      date,
+      cause: cause.trim(),
+      location: location.trim(),
+      reportedBy: reportedBy.trim(),
+    };
+    onAdd(newRecord);
     setName("");
-    setUsername("");
+    setAge("");
+    setDate("");
+    setCause("");
+    setLocation("");
+    setReportedBy("");
     setOpen(false);
   }
 
@@ -47,37 +67,45 @@ export function AddDeathDialog({
           <Button variant="outline">{triggerLabel}</Button>
         </DialogTrigger>
 
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>ADD STUDENT</DialogTitle>
+            <DialogTitle>Add Death Record</DialogTitle>
             <DialogDescription>
-              Add a new student record. Click save when you&apos;re done.
+              Provide details for the death record and click Save.
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4">
-            <div className="grid gap-3">
-              <Label htmlFor="name-1">Name</Label>
-              <Input
-                id="name-1"
-                name="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Full name"
-                required
-              />
+            <div className="grid gap-2">
+              <Label htmlFor="death-name">Full name</Label>
+              <Input id="death-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" required />
             </div>
 
-            <div className="grid gap-3">
-              <Label htmlFor="username-1">Username</Label>
-              <Input
-                id="username-1"
-                name="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="@username"
-                required
-              />
+            <div className="grid sm:grid-cols-2 gap-2">
+              <div>
+                <Label htmlFor="death-age">Age</Label>
+                <Input id="death-age" type="number" value={age === "" ? "" : String(age)} onChange={(e) => setAge(e.target.value === "" ? "" : Number(e.target.value))} placeholder="Age" required />
+              </div>
+              <div>
+                <Label htmlFor="death-date">Date</Label>
+                <Input id="death-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="death-cause">Cause</Label>
+              <Input id="death-cause" value={cause} onChange={(e) => setCause(e.target.value)} placeholder="Cause of death" required />
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-2">
+              <div>
+                <Label htmlFor="death-location">Location</Label>
+                <Input id="death-location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="District / Location" required />
+              </div>
+              <div>
+                <Label htmlFor="death-reported">Reported By</Label>
+                <Input id="death-reported" value={reportedBy} onChange={(e) => setReportedBy(e.target.value)} placeholder="Reporter name" required />
+              </div>
             </div>
           </div>
 
@@ -87,7 +115,6 @@ export function AddDeathDialog({
                 Cancel
               </Button>
             </DialogClose>
-
             <Button type="submit">Save</Button>
           </DialogFooter>
         </DialogContent>
