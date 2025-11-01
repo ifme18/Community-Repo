@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Calendar, MapPin, Bell, Newspaper, Users, TrendingUp, Clock, ChevronRight, Star, AlertCircle } from 'lucide-react';
 import { Screen } from '../app-components/layout/screen';
+import { Button } from '../components/ui/button';
+
 
 function Home() {
   const [activeTab, setActiveTab] = useState('overview');
-
-  const Events = [
+  
+  const initialEvents = [
     {
       eventName: "Community Fundraising",
       location: "Chiefs Corner",
@@ -95,15 +97,40 @@ function Home() {
     },
   ];
 
+  // keep events in state so added events re-render immediately
+  const [events, setEvents] = useState(initialEvents);
+
+  // convert ISO (YYYY-MM-DD) to display DD/MM/YYYY if needed
+  const formatDate = (d: string) => {
+    if (!d) return "";
+    if (d.includes("/")) return d; // already DD/MM/YYYY
+    const [y, m, day] = d.split("-");
+    return `${day}/${m}/${y}`;
+  };
+
+  function handleAddEvent(e: any) {
+    // AddEventDialog returns an event; convert its date to display format
+    const evt = {
+      ...e,
+      date: e.date ? formatDate(e.date) : e.date,
+      id: e.id ?? String(Date.now()),
+      eventName: e.title ?? e.eventName ?? "Untitled Event",
+      attendees: e.attendees ?? 0,
+      category: e.category ?? "general",
+      priority: e.priority ?? "low",
+    };
+    setEvents((prev) => [evt, ...prev]);
+  }
+
   const stats = [
     { label: "Active Members", value: "1,247", icon: Users, change: "+12%" },
-    { label: "Upcoming Events", value: Events.length.toString(), icon: Calendar, change: "+3" },
+    { label: "Upcoming Events", value: events.length.toString(), icon: Calendar, change: "+3" },
     { label: "Recent Updates", value: "8", icon: TrendingUp, change: "+2" },
     { label: "Community Projects", value: "15", icon: Star, change: "Active" },
   ];
 
   const getCategoryColor = (category: string) => {
-    const colors = {
+    const colors: Record<string,string> = {
       fundraising: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
       meeting: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
       sports: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
@@ -111,16 +138,16 @@ function Home() {
       infrastructure: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
       utilities: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300",
     };
-   ;
+    return colors[category] ?? "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
   };
 
   const getPriorityColor = (priority: string) => {
-    const colors = {
+    const colors: Record<string,string> = {
       high: "border-l-red-500 bg-red-50 dark:bg-red-900/20",
       medium: "border-l-yellow-500 bg-yellow-50 dark:bg-yellow-900/20",
       low: "border-l-green-500 bg-green-50 dark:bg-green-900/20",
     };
-    
+    return colors[priority] ?? "border-l-gray-300 bg-gray-50 dark:bg-gray-900/20";
   };
 
   return (
@@ -128,6 +155,10 @@ function Home() {
     
     <div className="min-h-screen ">
       {/* Header */}
+
+      <div className='flex-end'> 
+        
+        </div>
       
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -167,12 +198,12 @@ function Home() {
                     Upcoming Events
                   </h2>
                   <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                    {Events.length}
+                    {events.length}
                   </span>
                 </div>
               </div>
               <div className="p-6 space-y-4 max-h-96 overflow-y-auto">
-                {Events.map((event) => (
+                {events.map((event) => (
                   <div
                     key={event.id}
                     className={`p-4 rounded-lg border-l-4 ${getPriorityColor(event.priority)} hover:shadow-md transition-all duration-200 cursor-pointer`}
@@ -192,7 +223,7 @@ function Home() {
                       </div>
                       <div className="flex items-center">
                         <Clock className="h-4 w-4 mr-2" />
-                        {event.date} at {event.time}
+                        {formatDate(event.date)}{event.time ? ` at ${event.time}` : ""}
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="flex items-center">

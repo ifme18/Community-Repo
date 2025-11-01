@@ -17,7 +17,7 @@ export type DeathRecord = {
   id?: string | number;
   name: string;
   age: number;
-  date: string;
+  date: string; // ISO YYYY-MM-DD
   cause: string;
   location: string;
   reportedBy: string;
@@ -33,46 +33,54 @@ export function AddDeathDialog({
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [age, setAge] = useState<number | "">("");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState<string>(() => {
+    const today = new Date();
+    return today.toISOString().slice(0, 10);
+  });
   const [cause, setCause] = useState("");
   const [location, setLocation] = useState("");
   const [reportedBy, setReportedBy] = useState("");
 
+  function resetForm() {
+    setName("");
+    setAge("");
+    setDate(new Date().toISOString().slice(0, 10));
+    setCause("");
+    setLocation("");
+    setReportedBy("");
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim() || !date || !cause.trim() || !location.trim() || !reportedBy.trim() || age === "") return;
+    if (!name.trim() || age === "" || !date || !cause.trim() || !location.trim() || !reportedBy.trim())
+      return;
+
     const newRecord: DeathRecord = {
       id: Date.now(),
       name: name.trim(),
       age: Number(age),
-      date,
+      date, // keep YYYY-MM-DD so new Date(date) works in display
       cause: cause.trim(),
       location: location.trim(),
       reportedBy: reportedBy.trim(),
     };
-    onAdd(newRecord);
-    setName("");
-    setAge("");
-    setDate("");
-    setCause("");
-    setLocation("");
-    setReportedBy("");
+
+    onAdd(newRecord); // notify parent immediately
+    resetForm();
     setOpen(false);
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <form onSubmit={handleSubmit}>
-        <DialogTrigger asChild>
-          <Button variant="outline">{triggerLabel}</Button>
-        </DialogTrigger>
+      <DialogTrigger asChild>
+        <Button variant="outline">{triggerLabel}</Button>
+      </DialogTrigger>
 
-        <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px]">
+        <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Add Death Record</DialogTitle>
-            <DialogDescription>
-              Provide details for the death record and click Save.
-            </DialogDescription>
+            <DialogDescription>Provide details for the death record and click Save.</DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4">
@@ -84,7 +92,14 @@ export function AddDeathDialog({
             <div className="grid sm:grid-cols-2 gap-2">
               <div>
                 <Label htmlFor="death-age">Age</Label>
-                <Input id="death-age" type="number" value={age === "" ? "" : String(age)} onChange={(e) => setAge(e.target.value === "" ? "" : Number(e.target.value))} placeholder="Age" required />
+                <Input
+                  id="death-age"
+                  type="number"
+                  value={age === "" ? "" : String(age)}
+                  onChange={(e) => setAge(e.target.value === "" ? "" : Number(e.target.value))}
+                  placeholder="Age"
+                  required
+                />
               </div>
               <div>
                 <Label htmlFor="death-date">Date</Label>
@@ -111,14 +126,14 @@ export function AddDeathDialog({
 
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline" type="button" onClick={() => setOpen(false)}>
+              <Button variant="outline" type="button" onClick={() => { resetForm(); setOpen(false); }}>
                 Cancel
               </Button>
             </DialogClose>
             <Button type="submit">Save</Button>
           </DialogFooter>
-        </DialogContent>
-      </form>
+        </form>
+      </DialogContent>
     </Dialog>
   );
 }
