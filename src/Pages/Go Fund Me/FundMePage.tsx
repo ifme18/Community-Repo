@@ -1,96 +1,307 @@
 import { Screen } from "../../app-components/layout/screen";
 import { Button } from "../../components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
+import { Target, Wallet, TrendingUp, AlertCircle, Phone, ShieldCheck, CheckCircle } from "lucide-react";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../../components/ui/dialog";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
 
 interface Fund {
-    id: number;
-    fundName: string;
-    target: string;
-    raised: string;
+  id: number;
+  fundName: string;
+  target: string;
+  raised: string;
 }
 
 function FundMePage() {
-    const fundsData: Fund[] = [
-        {
-            id: 1,
-            fundName: "Building of a social house",
-            target: "89000",
-            raised: "56000"
-        },
-        {
-            id: 2,
-            fundName: "Church Harambee",
-            target: "120000",
-            raised: "45000"
-        },
-        {
-            id: 3,
-            fundName: "RTK Building",
-            target: "30000",
-            raised: "28000"
-        },
-        {
-            id: 4,
-            fundName: "Community Project",
-            target: "15000",
-            raised: "8000"
+  const [open, setOpen] = useState(false);
+  const [selectedFund, setSelectedFund] = useState<Fund | null>(null);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [amount, setAmount] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [status, setStatus] = useState<"idle" | "processing" | "success" | "error">("idle");
+
+  const fundsData: Fund[] = [
+    { id: 1, fundName: "Building of a social house", target: "89000", raised: "56000" },
+    { id: 2, fundName: "Church Harambee", target: "120000", raised: "45000" },
+    { id: 3, fundName: "RTK Building", target: "30000", raised: "28000" },
+    { id: 4, fundName: "Community Project", target: "15000", raised: "8000" },
+  ];
+
+  const handleContribute = (fund: Fund) => {
+    setSelectedFund(fund);
+    setPhoneNumber(""); // Reset form
+    setAmount("");
+    setOpen(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!phoneNumber || !amount) return;
+
+    setIsProcessing(true);
+    setStatus("processing");
+
+    // Simulate M-Pesa STK Push integration
+    // In production: Call your backend API to generate OAuth token, timestamp, and POST to Safaricom's STK endpoint
+    // e.g., fetch('/api/mpesa/stk-push', { method: 'POST', body: JSON.stringify({ phone: phoneNumber, amount: Number(amount), fundId: selectedFund?.id }) })
+    try {
+      // Simulate API delay and STK push
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Simulate success (in real: check callback from Safaricom for ResultCode 0)
+      if (Math.random() > 0.2) { // 80% success rate for demo
+        setStatus("success");
+        // Update raised amount optimistically
+        if (selectedFund) {
+          const newRaised = Number(selectedFund.raised) + Number(amount);
+          // In real app: Update via backend
+          console.log(`Contributed KSh ${amount} to ${selectedFund.fundName}. New raised: ${newRaised}`);
         }
-    ];
+      } else {
+        throw new Error("Insufficient balance or invalid PIN");
+      }
+    } catch (error) {
+      setStatus("error");
+      console.error("M-Pesa error:", error);
+    } finally {
+      setIsProcessing(false);
+      setTimeout(() => setStatus("idle"), 3000); // Auto-reset status
+    }
+  };
 
-    return (
-        <Screen>
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold">FundMe</h1>
-                <p className="text-gray-600 mt-2">Manage your savings goals</p>
+  return (
+    <Screen>
+      {/* Header */}
+      <div className="mb-10">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
+          <Wallet className="h-8 w-8 mr-3 text-blue-600 dark:text-blue-400" />
+          FundMe
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">
+          Track community fundraising goals and contribute securely via M-Pesa.
+        </p>
+      </div>
+
+      {/* Funds Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {fundsData.map((fund) => {
+          const target = Number(fund.target);
+          const raised = Number(fund.raised);
+          const percentage = (raised / target) * 100;
+          const remaining = target - raised;
+
+          // Dynamic progress bar colour
+          const progressColor = percentage >= 90
+            ? "bg-green-500"
+            : percentage >= 60
+            ? "bg-yellow-500"
+            : percentage >= 30
+            ? "bg-orange-500"
+            : "bg-red-500";
+
+          return (
+            <Card
+              key={fund.id}
+              className="group relative overflow-hidden bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+              onClick={() => handleContribute(fund)}
+            >
+              {/* Subtle gradient overlay on hover */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">
+                  {fund.fundName}
+                </CardTitle>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 gap-3 text-sm">
+                  {/* Target */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center text-gray-600 dark:text-gray-400">
+                      <Target className="h-4 w-4 mr-2 text-blue-600 dark:text-blue-400" />
+                      <span>Target</span>
+                    </div>
+                    <span className="font-bold text-gray-900 dark:text-white">
+                      KSh {target.toLocaleString()}
+                    </span>
+                  </div>
+
+                  {/* Raised */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center text-green-600 dark:text-green-400">
+                      <TrendingUp className="h-4 w-4 mr-2" />
+                      <span>Raised</span>
+                    </div>
+                    <span className="font-bold">
+                      KSh {raised.toLocaleString()}
+                    </span>
+                  </div>
+
+                  {/* Remaining */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center text-orange-600 dark:text-orange-400">
+                      <AlertCircle className="h-4 w-4 mr-2" />
+                      <span>Remaining</span>
+                    </div>
+                    <span className="font-bold">
+                      KSh {remaining.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                    <span>Progress</span>
+                    <span className="font-medium">{percentage.toFixed(1)}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
+                    <div
+                      className={`${progressColor} h-full rounded-full transition-all duration-700 ease-out`}
+                      style={{ width: `${Math.min(percentage, 100)}%` }}
+                      role="progressbar"
+                      aria-valuenow={percentage}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                    />
+                  </div>
+                </div>
+
+                {/* Contribute Button */}
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent card click
+                    handleContribute(fund);
+                  }}
+                  className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2"
+                >
+                  <Phone className="h-4 w-4" />
+                  Contribute via M-Pesa
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* M-Pesa Contribution Dialog */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="flex items-center text-xl font-semibold text-gray-900 dark:text-white">
+              <Wallet className="h-5 w-5 mr-2 text-green-600" />
+              Contribute to {selectedFund?.fundName}
+            </DialogTitle>
+            <DialogDescription className="text-gray-600 dark:text-gray-400">
+              Enter your M-Pesa details below. You'll receive a prompt on your phone to confirm the payment securely with your PIN.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid gap-2">
+              <Label htmlFor="phone">M-Pesa Phone Number</Label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="2547XXXXXXXX"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                required
+                disabled={isProcessing}
+              />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {fundsData.map((fund) => {
-                    const targetAmount = Number(fund.target);
-                    const raisedAmount = Number(fund.raised);
-                    const percentage = (raisedAmount / targetAmount) * 100;
-                    const remaining = targetAmount - raisedAmount;
-
-                    return (
-                        <Card key={fund.id} className="hover:shadow-lg transition-shadow">
-                            <CardHeader>
-                                <CardTitle className="text-lg">{fund.fundName}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-2">
-                                    <div className="flex justify-between">
-                                        <span className="text-sm text-gray-600">Target:</span>
-                                        <span className="font-semibold">KSh {targetAmount.toLocaleString()}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-sm text-gray-600">Raised:</span>
-                                        <span className="font-semibold text-green-600">KSh {raisedAmount.toLocaleString()}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-sm text-gray-600">Remaining:</span>
-                                        <span className="font-semibold text-orange-600">KSh {remaining.toLocaleString()}</span>
-                                    </div>
-                                    <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                                        <div 
-                                            className="bg-blue-600 h-2 rounded-full transition-all" 
-                                            style={{ width: `${Math.min(percentage, 100)}%` }}
-                                        />
-                                    </div>
-                                    <p className="text-xs text-gray-500 text-center mt-1">
-                                        {percentage.toFixed(1)}% funded
-                                    </p>
-                                </div>
-
-                                <Button onClick={() => alert("Coming soon")} className="mt-4 w-full">
-                                    Contribute
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    );
-                })}
+            <div className="grid gap-2">
+              <Label htmlFor="amount">Amount (KSh)</Label>
+              <Input
+                id="amount"
+                type="number"
+                min="1"
+                placeholder="e.g., 1000"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                required
+                disabled={isProcessing}
+              />
             </div>
-        </Screen>
-    );
+
+            {/* Status Message */}
+            {status !== "idle" && (
+              <div className={`p-3 rounded-lg text-sm ${status === "success" ? "bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-200" : status === "error" ? "bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-200" : "bg-blue-50 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200"}`}>
+                {status === "processing" && (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent"></div>
+                    Sending M-Pesa prompt... Check your phone.
+                  </div>
+                )}
+                {status === "success" && (
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4" />
+                    Payment successful! Thank you for your contribution.
+                  </div>
+                )}
+                {status === "error" && (
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4" />
+                    Payment failed. Please check your balance and try again.
+                  </div>
+                )}
+              </div>
+            )}
+
+            <DialogFooter className="gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+                disabled={isProcessing}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white flex items-center gap-2"
+                disabled={isProcessing || status === "success"}
+              >
+                {isProcessing ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                    Processing...
+                  </>
+                ) : status === "success" ? (
+                  <CheckCircle className="h-4 w-4" />
+                ) : (
+                  <>
+                    <ShieldCheck className="h-4 w-4" />
+                    Pay via M-Pesa
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Empty State */}
+      {fundsData.length === 0 && (
+        <div className="text-center py-16">
+          <div className="bg-gray-100 dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+            <Wallet className="h-12 w-12 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            No active funds yet
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400">
+            Start a new fundraising goal to get the community involved.
+          </p>
+        </div>
+      )}
+    </Screen>
+  );
 }
 
 export default FundMePage;
